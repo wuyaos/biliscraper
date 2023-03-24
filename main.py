@@ -8,6 +8,9 @@ from resize_pic import crop_image
 from rename_file import format_name
 from modify import replace_gif
 
+# todo: 1.日志文件；2.srt文件没重命名成功；3.TV类型刮削
+
+
 input_file = Path("C:/Users/wff19/Downloads/Compressed/DownKyi-1.5.7/Media/link/")
 # 重命名文件夹
 format_name(input_file)
