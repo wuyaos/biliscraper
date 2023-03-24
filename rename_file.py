@@ -24,6 +24,46 @@ def format_name(format_path:Path):
     print("重命名完成")
 
 
+def gen_poster(image_list, video_dir:Path):
+    """
+    生成poster.jpg
+    """
+    # 判断是否存在图片
+    if not image_list:
+        # 截图
+        replace_gif(video_dir)
+    else:
+        # 按图片尺寸排序
+        image_list = sorted(image_list ,key=lambda x: x.stat().st_size)
+        # 图片列表
+        vertical_image_list = []
+        horizontal_image_list = []
+        # 优先寻找竖向图，若无竖向图，则寻找横向图进行剪裁
+        for image in image_list:
+            img = Image.open(image)
+            if (img.size[0] < img.size[1]) and (image.stat().st_size > 102400):
+                vertical_image_list.append(image)
+            if (img.size[0] > img.size[1]) and (image.stat().st_size > 102400):
+                horizontal_image_list.append(image)
+            img.close()
+        # 若存在竖向图，则直接复制
+        if vertical_image_list:
+            image = vertical_image_list[0]
+            image.rename(video_dir / "poster.jpg")
+            print("竖向图复制成功")
+        else:
+            # 若无竖向图，则寻找横向图进行剪裁
+            if horizontal_image_list:
+                image = horizontal_image_list[0]
+                crop_image(image, video_dir/ "poster.jpg",0.65)
+                print("横向图剪裁成功")
+            else:
+                # 若无横向图，则截图
+                replace_gif(video_dir)
+                print("截图成功")
+        # 删除其他图片
+        for image in image_list:
+            image.unlink()
 
 
 # 整理文件名
@@ -42,7 +82,7 @@ def format_filename(video_dir:Path, flag=False):
     title = re.search(r'^(.+)\(', video_dir.name).group(1)
     bvid = re.search(r'\((.+)\)', video_dir.name).group(1)
     # 获取父目录名
-    full_title = video_dir.parent.name
+    full_title = video_dir.name
 
     # 步骤2：获取视频数目以及列表
     video_list = list(video_dir.glob("*.mp4"))
@@ -52,7 +92,7 @@ def format_filename(video_dir:Path, flag=False):
     # 获取弹幕文件列表
     danmu_list = list(video_dir.glob("*.ass"))
     # 获取图片文件列表jpg，png, gif
-    image_list = list(video_dir.glob("*.jpg")) + list(video_dir.glob("*.png")) + list(video_dir.glob("*.gif"))
+    image_list = list(video_dir.glob("*.jpg")) + list(video_dir.glob("*.png"))
 
     # 步骤3：重命名
     if video_num == 1:
@@ -66,17 +106,7 @@ def format_filename(video_dir:Path, flag=False):
         danmu_file = danmu_list[0]
         danmu_file.rename(video_dir / f"{title}.danmu.ass")
         # 重命名图片文件
-        image_file = image_list[0]
-        # 若为竖向图，则直接改名为poster.jpg
-        image_obj = Image.open(image_file)
-        if image_obj.height > image_obj.width:
-            image_obj.close()
-            image_file.rename(video_dir / "poster.jpg")
-        # 若为横向图，则剪裁为竖向图，再改名为poster.jpg
-        else:
-            crop_image(image_file, video_dir / "poster.jpg", 0.65)
-            image_obj.close()
-            image_file.unlink()
+        gen_poster(image_list, video_dir)
     elif video_num > 1:
         for video in video_list:
             # 获取id/分P名, 原视频名为<分pid#分P视频名.mp4>, 以#分割，考虑到有些视频名中含有'.'，去除后缀名
@@ -94,25 +124,8 @@ def format_filename(video_dir:Path, flag=False):
             # 重命名弹幕文件
             danmu_file = [danmu for danmu in danmu_list if danmu.stem.split("#")[0] == pid][0]
             danmu_file.rename(video_dir / f"{full_title} - {pid}#{pname}.danmu.ass")
-        # 重命名图片文件, 寻找竖向图
-        image_file = []
-        for image in image_list:
-            image_obj = Image.open(image)
-            if image_obj.height > image_obj.width:
-                image_file.append(image)
-            image_obj.close()
-        if image_file:
-            image_file = image_file[0]
-            image_file.rename(video_dir / "poster.jpg")
-        # 若无竖向图，则寻找横向图进行剪裁
-        else:
-            image_file = image_list[0]
-            crop_image(image_file, video_dir / "poster.jpg", 0.65)
-        # 删除其他图片
-        for image in image_list:
-            # 不是poster.jpg的图片
-            if image.name != "poster.jpg":
-                image.unlink()
+        # 重命名图片文件
+        gen_poster(image_list, video_dir)
     print(f"视频名：{title}，视频数目：{video_num}，视频id：{bvid}，重命名完成！")
 
 

@@ -1,30 +1,35 @@
-# 寻找对应的BVxx替换gif文件
-import requests
 from pathlib import Path
+import subprocess
+from PIL import Image
+from resize_pic import crop_image
 
-def gen_cover(bvid, cover_path):
-    """
-    根据视频BV号的视频截图作为封面
-    """
-    # 生成封面
-    cover_url = f"https://api.bilibili.com/x/web-interface/view?bvid={bvid}"
-    cover_json = requests.get(cover_url).json()
-    cover_url = cover_json["data"]["pic"]
-    # 下载封面
-    cover = requests.get(cover_url)
-    with open(cover_path, "wb") as f:
-        f.write(cover.content)
-    
+ffmpeg_path = "C:/app/ffmpeg/bin/ffmpeg.exe"
+ffmprobe_path = "C:/app/ffmpeg/bin/ffprobe.exe"
+
 def replace_gif(input_path:Path):
     """
     将gif文件替换为封面
     """
-    # 寻找对应的BVxx替换gif文件
-    for file in input_path.rglob("*.gif"):
-        # 获取父目录名，解析bvid
-        bvid = file.parent.name.split('(')[1].split(')')[0]
-        # 生成封面
-        cover_path = file.parent / f"poster.jpg"
-        gen_cover(bvid, cover_path)
-        # 删除gif文件
-        file.unlink()
+    print(input_path)
+    # 获取视频列表
+    video = [video for video in input_path.glob("*.mp4")][0]
+    # 获取视频时长
+    result = subprocess.run([ffmprobe_path, '-i', video, '-show_entries', 'format=duration', '-v', 'quiet', '-of', 'csv=%s' % ("p=0")], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    duration = float(result.stdout)
+
+    # 截取视频的10%时长的截图
+    start_time = duration * 0.2
+    image_file = input_path / "poster.jpg"
+    subprocess.run([ffmpeg_path, '-i', video, '-ss', str(start_time), '-vframes', '1', "-y",str(image_file)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # 若为竖向图，则直接改名为poster.jpg
+    image_obj = Image.open(image_file)
+    if image_obj.height < image_obj.width:
+        crop_image(image_file, image_file, 0.65)
+        image_obj.close()
+    # 删除gif文件
+    for gif in input_path.glob("*.gif"):
+        gif.unlink()
+
+if __name__ == "__main__":
+    input_path = Path("C:/Users/wff19/Downloads/Compressed/DownKyi-1.5.7/Media/link/【咬人猫 有咩酱 赤九玖】155小分队❤sweet&sweet holiday❤(BV1Rs411X76N)/")
+    replace_gif(input_path)

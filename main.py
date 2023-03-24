@@ -8,18 +8,13 @@ from resize_pic import crop_image
 from rename_file import format_name
 from modify import replace_gif
 
-# todo: 没有删除旧的jpg, full_title有时候为'link'，需要修改
-
-
-input_file = Path("C:/Users/wff19/Downloads/Compressed/DownKyi-1.5.7/Media/link")
+input_file = Path("C:/Users/wff19/Downloads/Compressed/DownKyi-1.5.7/Media/link/")
 # 重命名文件夹
 format_name(input_file)
-replace_gif(input_file)
 print("生成nfo文件")
 for video_dir in input_file.glob("*"):
     # 获取视频列表
-    video_list = [video for video in video_dir.glob("*.mp4")]
-    video_num = len(video_list)
+    video_num = len([video for video in video_dir.glob("*.mp4")])
     flag = False
     if video_num > 1:
         flag = True
@@ -27,7 +22,7 @@ for video_dir in input_file.glob("*"):
     if not (video_dir / "poster.jpg").exists() :
         print(video_dir.name)
         format_filename(video_dir)
-
+        video_list = [video for video in video_dir.glob("*.mp4")]
         # 产生nfo文件
         time.sleep(0.1)
         # 获取视频文件，并循环些nfo

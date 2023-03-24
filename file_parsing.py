@@ -65,3 +65,7 @@ def file_parsing(file:Path, flag=False):
         "original_filename": file.name,
     }
     return bilivideo_info
+
+if __name__ == '__main__':
+    info = asyncio.get_event_loop().run_until_complete(getinfo("BV1dx411F7jC"))
+    print(info)
