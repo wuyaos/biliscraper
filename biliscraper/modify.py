@@ -1,7 +1,7 @@
 from pathlib import Path
 import subprocess
 from PIL import Image
-from resize_pic import crop_image
+from biliscraper.resize_pic import crop_image
 
 ffmpeg_path = "C:/app/ffmpeg/bin/ffmpeg.exe"
 ffmprobe_path = "C:/app/ffmpeg/bin/ffprobe.exe"
@@ -29,7 +29,3 @@ def replace_gif(input_path:Path):
     # 删除gif文件
     for gif in input_path.glob("*.gif"):
         gif.unlink()
-
-if __name__ == "__main__":
-    input_path = Path("C:/Users/wff19/Downloads/Compressed/DownKyi-1.5.7/Media/link/【咬人猫 有咩酱 赤九玖】155小分队❤sweet&sweet holiday❤(BV1Rs411X76N)/")
-    replace_gif(input_path)

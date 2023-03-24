@@ -1,14 +1,13 @@
 import asyncio
 import datetime
-import json
-from pathlib import Path
 import re
-import jsbeautifier
+from pathlib import Path
+
 import requests
-from bilibili_api import video, video_tag
+from bilibili_api import video
 
 
-async def getinfo(BV):
+async def getinfo(BV:str)->dict:
     # 实例化 Video 类
     v = video.Video(bvid=BV)
     # 获取信息
@@ -17,18 +16,20 @@ async def getinfo(BV):
     return info
 
 # 解析文件名
-def file_parsing(file:Path, flag=False):
+def file_parsing(file:Path, flag=False) -> dict:
     # flag为True时,存在多P视频
     parent_dir = file.parent
     # 匹配title
     bilivideo_name = re.search(r'^(.+)\(', parent_dir.name).group(1)
     # 匹配Id
     bilivideo_id = re.search(r'\((\w+)\)$', parent_dir.name).group(1)
+    print(f"匹配到视频名称:{bilivideo_name},视频Id:{bilivideo_id}")
     if flag:
         # 解析pname,pid,名称格式<title - pid#pname.mp4>
         pname = re.search(r'(.*) - (\d+)#(.*)\.mp4', file.name).group(3)
         pid = re.search(r'(.*) - (\d+)#(.*)\.mp4', file.name).group(2)
         pname = f"{pid}.{pname}"
+        print(f"匹配到分P视频名称:{pname}")
     else:
         pname = None
     url = 'https://api.bilibili.com/x/tag/archive/tags'
@@ -64,8 +65,5 @@ def file_parsing(file:Path, flag=False):
         "tag": tag_list,
         "original_filename": file.name,
     }
+    print(f"获取视频信息成功")
     return bilivideo_info
-
-if __name__ == '__main__':
-    info = asyncio.get_event_loop().run_until_complete(getinfo("BV1dx411F7jC"))
-    print(info)

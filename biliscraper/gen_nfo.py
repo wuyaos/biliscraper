@@ -1,4 +1,4 @@
-def gen_actor_info(actorlist):
+def gen_actor_info(actorlist: list) -> str:
     actor_info = ''
     for actor in actorlist:
         actor_info += f'''  <actor>
@@ -11,14 +11,15 @@ def gen_actor_info(actorlist):
     return actor_info
 
 
-def gen_tag_info(taglist):
+def gen_tag_info(taglist: list) -> str:
     tag_info = ''
     for tag in taglist:
         tag_info += f'''  <tag>{tag}</tag>
 '''
     return tag_info
 
-def gen_genre_info(genrelist):
+
+def gen_genre_info(genrelist: list) -> str:
     genre_info = ''
     for genre in genrelist:
         genre_info += f'''  <genre>{genre}</genre>
@@ -26,7 +27,7 @@ def gen_genre_info(genrelist):
     return genre_info
 
 
-def gen_nfo(nfo_dict):
+def gen_nfo(nfo_dict: dict) -> str:
     title = nfo_dict['title']
     originaltitle = nfo_dict['originaltitle']
     sorttitle = nfo_dict['sorttitle']

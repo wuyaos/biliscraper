@@ -1,11 +1,11 @@
 from pathlib import Path
 import re
-from resize_pic import crop_image
+from biliscraper.resize_pic import crop_image
 from PIL import Image
-from modify import replace_gif
+from biliscraper.modify import replace_gif
 
 
-def format_name(format_path:Path):
+def format_name(format_path: Path):
     """
     遍历所有文件夹以及文件，进行字符替换
     （ 替换为 (
@@ -24,7 +24,7 @@ def format_name(format_path:Path):
     print("重命名完成")
 
 
-def gen_poster(image_list, video_dir:Path):
+def gen_poster(image_list: list, video_dir: Path):
     """
     生成poster.jpg
     """
@@ -34,7 +34,7 @@ def gen_poster(image_list, video_dir:Path):
         replace_gif(video_dir)
     else:
         # 按图片尺寸排序
-        image_list = sorted(image_list ,key=lambda x: x.stat().st_size)
+        image_list = sorted(image_list, key=lambda x: x.stat().st_size)
         # 图片列表
         vertical_image_list = []
         horizontal_image_list = []
@@ -55,7 +55,7 @@ def gen_poster(image_list, video_dir:Path):
             # 若无竖向图，则寻找横向图进行剪裁
             if horizontal_image_list:
                 image = horizontal_image_list[0]
-                crop_image(image, video_dir/ "poster.jpg",0.65)
+                crop_image(image, video_dir / "poster.jpg", 0.65)
                 print("横向图剪裁成功")
             else:
                 # 若无横向图，则截图
@@ -67,7 +67,7 @@ def gen_poster(image_list, video_dir:Path):
 
 
 # 整理文件名
-def format_filename(video_dir:Path, flag=False):
+def format_filename(video_dir: Path, flag:bool=False):
     """
     重命名每个目录下的文件
     其中:
@@ -118,7 +118,9 @@ def format_filename(video_dir:Path, flag=False):
                 if f"{pid}#" not in [subtitle.stem for subtitle in subtitle_list]:
                     pass
                 else:
-                    subtitle_file = [subtitle for subtitle in subtitle_list if subtitle.stem.split("#")[0] == pid][0]
+                    subtitle_file = [
+                        subtitle for subtitle in subtitle_list if subtitle.stem.split("#")[0] == pid
+                    ][0]
                     subtitle_file.rename(video_dir / f"{full_title} - {pid}#{pname}.zh.srt")
 
             # 重命名弹幕文件
@@ -127,15 +129,3 @@ def format_filename(video_dir:Path, flag=False):
         # 重命名图片文件
         gen_poster(image_list, video_dir)
     print(f"视频名：{title}，视频数目：{video_num}，视频id：{bvid}，重命名完成！")
-
-
-
-if __name__ == "__main__":
-    input_file = Path("C:/Users/wff19/Downloads/Compressed/DownKyi-1.5.7/Media/link")
-    format_name(input_file)
-    replace_gif(input_file)
-    for video_dir in input_file.glob("*"):
-        # 判断是否存在poster.jpg 以及 存在gif文件
-        if not (video_dir / "poster.jpg").exists() :
-            print(video_dir.name)
-            format_filename(video_dir)
