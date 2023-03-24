@@ -24,14 +24,12 @@ jobs:
 
       - name: 编译打包为wheel文件
         run: |
-          cd src
           pip install setuptools wheel
           python setup.py sdist bdist_wheel
 
       - name: 获取Release版本号
         id: release_version
         run: |
-          cd src
           app_version=$(cat setup.py | grep version | sed "s/version='\([0-9]\+\.[0-9]\+\.[0-9]\+\)',/\1/" | sed s/[[:space:]]//g)
           echo "app_version=$app_version" >> $GITHUB_ENV
           echo "app_version=$app_version"
@@ -40,7 +38,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: src/dist/*.whl
+          file: dist/*.whl
           tag: v${{env.app_version}}
           release_name: v${{env.app_version}}
           overwrite: true
